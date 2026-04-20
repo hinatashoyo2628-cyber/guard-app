@@ -1,19 +1,20 @@
-import { View, Text, Pressable, TextInput } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useState, useEffect, useRef } from "react";
-import { styles } from "./styles";
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
-import NfcManager, { NfcTech } from "react-native-nfc-manager";
+import { useRouter } from "expo-router";
 import {
+  collection,
   doc,
   getDoc,
-  updateDoc,
-  setDoc,
-  collection,
   getDocs,
+  setDoc,
+  updateDoc,
 } from "firebase/firestore";
+import { useEffect, useRef, useState } from "react";
+import { Pressable, Text, TextInput, View } from "react-native";
+import NfcManager, { NfcTech } from "react-native-nfc-manager";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { db } from "../../firebase.js";
+import { styles } from "../../styles/styles";
 
 export default function HomeScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -30,6 +31,7 @@ export default function HomeScreen() {
   // 🔥 NEW
   const [attendanceCount, setAttendanceCount] = useState(0);
   const TOTAL_EMPLOYEES = 9;
+  const router = useRouter();
 
   const scanningRef = useRef(false);
 
@@ -139,61 +141,85 @@ export default function HomeScreen() {
 
   // 🔥 MAIN LOGIC (UPDATED)
   const handleConfirm = async () => {
-    try {
-      if (!currentUID) return;
+  try {
+    if (!currentUID) return;
 
-      const today = new Date().toISOString().split("T")[0];
-      const historyRef = doc(db, "History", today, "logs", currentUID);
+    const today = new Date().toISOString().split("T")[0]; // 2026-04-20
+    const month = today.slice(0, 7); // 2026-04
+    const now = new Date().toISOString();
 
-      const snap = await getDoc(historyRef);
-      const now = new Date().toISOString();
+    // ✅ FIX: CREATE MONTH DOCUMENT
+    await setDoc(
+      doc(db, "History", month),
+      { createdAt: now },
+      { merge: true }
+    );
 
-      if (!snap.exists()) {
-        // 🔥 GET COUNT FIRST
-        const currentCount = await getTodayAttendanceCount();
+    // ✅ FIX: CREATE DAY DOCUMENT
+    await setDoc(
+      doc(db, "History", month, "days", today),
+      { createdAt: now },
+      { merge: true }
+    );
 
-        await setDoc(historyRef, {
-          name: employee.name,
-          employeeno: employee.employeeno,
+    // ✅ YOUR EXISTING LOG PATH (UNCHANGED)
+    const historyRef = doc(
+      db,
+      "History",
+      month,
+      "days",
+      today,
+      "logs",
+      currentUID
+    );
+
+    const employeeRef = doc(db, "employees", currentUID);
+
+    const snap = await getDoc(historyRef);
+
+    if (!snap.exists()) {
+      await setDoc(historyRef, {
+        name: employee.name,
+        employeeno: employee.employeeno,
+        items: editedItems,
+        IN: now,
+        OUT: null,
+        attendanceNo: Date.now(),
+      });
+
+      alert("Time IN recorded");
+    } else {
+      const data = snap.data();
+
+      if (!data.OUT) {
+        await updateDoc(historyRef, {
+          OUT: now,
           items: editedItems,
-          IN: now,
-          OUT: null,
-          attendanceNo: currentCount + 1, // 🔥 NUMBERING
         });
 
-        alert(`Time IN recorded (#${currentCount + 1})`);
-
+        alert("Time OUT recorded");
       } else {
-        const data = snap.data();
-
-        if (!data.OUT) {
-          await updateDoc(historyRef, {
-            OUT: now,
-            items: editedItems,
-          });
-
-          alert("Time OUT recorded");
-
-        } else {
-          alert("Employee already timed OUT today");
-          return;
-        }
+        alert("Employee already timed OUT today");
+        return;
       }
-
-      // 🔥 REFRESH COUNT
-      await getTodayAttendanceCount();
-
-    } catch (e) {
-      console.log("❌ History error:", e);
     }
 
-    scanningRef.current = false;
-    setEmployee(null);
-    setEditing(false);
-    setStatus("Waiting for scan...");
+    // ✅ KEEP THIS
+    await updateDoc(employeeRef, {
+      items: editedItems,
+    });
 
-    setTimeout(scanNfc, 300);
-  };
+  } catch (e) {
+    console.log("❌ Save error:", e);
+  }
+
+  scanningRef.current = false;
+  setEmployee(null);
+  setEditing(false);
+  setStatus("Waiting for scan...");
+
+  setTimeout(scanNfc, 300);
+};
 
   return (
     <SafeAreaView style={styles.container}>
@@ -217,18 +243,25 @@ export default function HomeScreen() {
       )}
 
       {menuOpen && (
-        <View style={styles.dropdown}>
-          <Pressable style={styles.menuItem}>
-            <Ionicons name="document-text-outline" size={18} />
-            <Text style={styles.menuText}>Records</Text>
-          </Pressable>
+          <View style={styles.dropdown}>
+            <Pressable
+              style={styles.menuItem}
+              onPress={() => {
+                console.log("👉 Navigate to Records");
+                setMenuOpen(false);
+                router.push("/records"); // ✅ FIXED
+              }}
+            >
+              <Ionicons name="document-text-outline" size={18} />
+              <Text style={styles.menuText}>Records</Text>
+            </Pressable>
 
-          <Pressable style={styles.menuItem}>
-            <Ionicons name="settings-outline" size={18} />
-            <Text style={styles.menuText}>Settings</Text>
-          </Pressable>
-        </View>
-      )}
+            <Pressable style={styles.menuItem}>
+              <Ionicons name="settings-outline" size={18} />
+              <Text style={styles.menuText}>Settings</Text>
+            </Pressable>
+          </View>
+        )}
 
       <View style={styles.content}>
         {!employee ? (
