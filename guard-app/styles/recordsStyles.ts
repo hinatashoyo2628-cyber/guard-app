@@ -3,78 +3,104 @@ import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111827",
-    padding: 20,
+    backgroundColor: "#1f3f5b", // ✅ match home screen
+  },
+
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 10,
   },
 
   title: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: "700",
-    color: "#fff",
-  },
-
-  backBtn: {
-    marginTop: 10,
-  },
-
-  backText: {
-    color: "#60a5fa",
-    fontSize: 14,
+    color: "#ffffff",
   },
 
   list: {
-    marginTop: 15,
+    paddingHorizontal: 20,
+    paddingTop: 10,
   },
 
+  // 🔷 MONTH & DATE CARDS
   dateCard: {
-    backgroundColor: "#1f2937",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 10,
+    backgroundColor: "#2a3c54",
+    padding: 18,
+    borderRadius: 18,
+    marginBottom: 14,
+
+    // ✨ premium shadow
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 5,
   },
 
   dateText: {
-    color: "#fff",
-    fontSize: 16,
+    color: "#ffffff",
+    fontSize: 17,
     fontWeight: "600",
   },
 
+  // 🧾 RECORD CARD (WHITE)
   recordCard: {
-    backgroundColor: "#1f2937",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 10,
+    backgroundColor: "#f4f7fb",
+    padding: 20,
+    borderRadius: 20,
+    marginBottom: 14,
+
+    // ✨ softer shadow
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
 
   name: {
-    color: "#fff",
-    fontSize: 16,
+    color: "#111827",
+    fontSize: 20,
     fontWeight: "700",
   },
 
   subText: {
-    color: "#9ca3af",
+    color: "#6b7280",
     fontSize: 13,
+    marginTop: 2,
+  },
+
+  timeContainer: {
+    marginTop: 10,
   },
 
   inText: {
-    color: "#10b981",
-    fontSize: 13,
+    color: "#16a34a",
+    fontSize: 14,
+    fontWeight: "500",
   },
 
   outText: {
-    color: "#ef4444",
-    fontSize: 13,
+    color: "#dc2626",
+    fontSize: 14,
+    fontWeight: "500",
   },
 
   itemsHeader: {
-    color: "#fff",
-    marginTop: 10,
+    color: "#111827",
+    marginTop: 12,
     fontWeight: "600",
+    fontSize: 14,
   },
 
   item: {
-    color: "#d1d5db",
+    color: "#374151",
     fontSize: 13,
+    marginLeft: 4,
+  },
+
+  emptyText: {
+    color: "#cbd5e1",
+    textAlign: "center",
+    marginTop: 20,
   },
 });

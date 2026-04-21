@@ -1,9 +1,13 @@
 import { collection, getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import {
+  FlatList,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { db } from "../firebase.js";
-import { styles } from "../styles/recordsStyles";
 
 export default function RecordsScreen() {
   const [months, setMonths] = useState<string[]>([]);
@@ -17,137 +21,108 @@ export default function RecordsScreen() {
     loadMonths();
   }, []);
 
-  // 🔥 LOAD MONTHS (supports OLD + NEW)
+  const formatMonth = (month: string) => {
+    const [year, m] = month.split("-");
+    return new Date(Number(year), Number(m) - 1).toLocaleString("en-US", {
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const formatTime = (date: string) => {
+    return new Date(date).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   const loadMonths = async () => {
-    try {
-      const snap = await getDocs(collection(db, "History"));
+    const snap = await getDocs(collection(db, "History"));
+    const set = new Set<string>();
 
-      const monthSet = new Set<string>();
+    snap.forEach((doc) => {
+      const id = doc.id;
+      if (id.length === 10) set.add(id.slice(0, 7));
+      else set.add(id);
+    });
 
-      snap.forEach((doc) => {
-        const id = doc.id;
-
-        // OLD structure (2026-04-20)
-        if (id.length === 10) {
-          monthSet.add(id.slice(0, 7));
-        } else {
-          // NEW structure (2026-04)
-          monthSet.add(id);
-        }
-      });
-
-      const list = Array.from(monthSet);
-      list.sort((a, b) => (a < b ? 1 : -1));
-
-      setMonths(list);
-      console.log("📅 Months:", list);
-    } catch (e) {
-      console.log("❌ Month error:", e);
-    }
+    const list = Array.from(set).sort((a, b) => (a < b ? 1 : -1));
+    setMonths(list);
   };
 
-  // 🔥 LOAD DATES (supports BOTH structures)
   const loadDates = async (month: string) => {
+    const list: string[] = [];
+
+    const oldSnap = await getDocs(collection(db, "History"));
+    oldSnap.forEach((doc) => {
+      if (doc.id.startsWith(month) && doc.id.length === 10) {
+        list.push(doc.id);
+      }
+    });
+
     try {
-      const list: string[] = [];
+      const newSnap = await getDocs(
+        collection(db, "History", month, "days")
+      );
+      newSnap.forEach((doc) => list.push(doc.id));
+    } catch {}
 
-      // OLD structure
-      const oldSnap = await getDocs(collection(db, "History"));
-      oldSnap.forEach((doc) => {
-        const id = doc.id;
-        if (id.startsWith(month) && id.length === 10) {
-          list.push(id);
-        }
-      });
-
-      // NEW structure
-      try {
-        const newSnap = await getDocs(
-          collection(db, "History", month, "days")
-        );
-
-        newSnap.forEach((doc) => {
-          list.push(doc.id);
-        });
-      } catch {}
-
-      list.sort((a, b) => (a < b ? 1 : -1));
-
-      setDates(list);
-      setSelectedMonth(month);
-
-      console.log("📆 Dates:", list);
-    } catch (e) {
-      console.log("❌ Date error:", e);
-    }
+    list.sort((a, b) => (a < b ? 1 : -1));
+    setDates(list);
+    setSelectedMonth(month);
   };
 
-  // 🔥 LOAD RECORDS (supports BOTH)
   const loadRecords = async (date: string) => {
-    try {
-      let snap;
+    let snap;
 
-      // TRY NEW
-      if (selectedMonth) {
-        snap = await getDocs(
-          collection(db, "History", selectedMonth, "days", date, "logs")
-        );
-      }
-
-      // FALLBACK OLD
-      if (!snap || snap.empty) {
-        snap = await getDocs(collection(db, "History", date, "logs"));
-      }
-
-      const list: any[] = [];
-      snap.forEach((doc) => list.push(doc.data()));
-
-      setRecords(list);
-      setSelectedDate(date);
-
-      console.log("👥 Records:", list);
-    } catch (e) {
-      console.log("❌ Records error:", e);
+    if (selectedMonth) {
+      snap = await getDocs(
+        collection(db, "History", selectedMonth, "days", date, "logs")
+      );
     }
+
+    if (!snap || snap.empty) {
+      snap = await getDocs(collection(db, "History", date, "logs"));
+    }
+
+    const list: any[] = [];
+    snap.forEach((doc) => list.push(doc.data()));
+
+    setRecords(list);
+    setSelectedDate(date);
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Records</Text>
-
-      {/* BACK */}
-      {(selectedMonth || selectedDate) && (
-        <Pressable
-          style={styles.backBtn}
-          onPress={() => {
-            if (selectedDate) {
-              setSelectedDate(null);
-              setRecords([]);
-            } else {
-              setSelectedMonth(null);
-              setDates([]);
-            }
-          }}
-        >
-          <Text style={styles.backText}>← Back</Text>
-        </Pressable>
-      )}
-
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f4f6f8" }}>
       {/* MONTHS */}
       {!selectedMonth && (
         <FlatList
           data={months}
           keyExtractor={(item) => item}
-          style={styles.list}
-          ListEmptyComponent={
-            <Text style={{ color: "#9ca3af" }}>No records yet</Text>
-          }
+          contentContainerStyle={{ padding: 20 }}
           renderItem={({ item }) => (
             <Pressable
-              style={styles.dateCard}
               onPress={() => loadDates(item)}
+              style={{
+                backgroundColor: "#ffffff",
+                padding: 16,
+                borderRadius: 14,
+                marginBottom: 12,
+                borderWidth: 1,
+                borderColor: "#e5e7eb",
+              }}
             >
-              <Text style={styles.dateText}>{item}</Text>
+              <Text style={{ fontSize: 16, fontWeight: "600", color: "#111827" }}>
+                {formatMonth(item)}
+              </Text>
             </Pressable>
           )}
         />
@@ -158,16 +133,22 @@ export default function RecordsScreen() {
         <FlatList
           data={dates}
           keyExtractor={(item) => item}
-          style={styles.list}
-          ListEmptyComponent={
-            <Text style={{ color: "#9ca3af" }}>No days yet</Text>
-          }
+          contentContainerStyle={{ padding: 20 }}
           renderItem={({ item }) => (
             <Pressable
-              style={styles.dateCard}
               onPress={() => loadRecords(item)}
+              style={{
+                backgroundColor: "#ffffff",
+                padding: 16,
+                borderRadius: 14,
+                marginBottom: 12,
+                borderWidth: 1,
+                borderColor: "#e5e7eb",
+              }}
             >
-              <Text style={styles.dateText}>{item}</Text>
+              <Text style={{ fontSize: 14, color: "#374151" }}>
+                {formatDate(item)}
+              </Text>
             </Pressable>
           )}
         />
@@ -178,37 +159,134 @@ export default function RecordsScreen() {
         <FlatList
           data={records}
           keyExtractor={(_, i) => i.toString()}
-          style={styles.list}
-          ListEmptyComponent={
-            <Text style={{ color: "#9ca3af" }}>
-              No records for this date
-            </Text>
-          }
-          renderItem={({ item }) => (
-            <View style={styles.recordCard}>
-              <Text style={styles.name}>{item.name}</Text>
+          contentContainerStyle={{ padding: 20 }}
+          renderItem={({ item }) => {
+            const isOut = !!item.OUT;
 
-              <Text style={styles.subText}>
-                ID: {item.employeeno}
-              </Text>
+            return (
+              <View
+                style={{
+                  backgroundColor: "#ffffff",
+                  borderRadius: 18,
+                  marginBottom: 14,
+                  overflow: "hidden",
+                  borderWidth: 1,
+                  borderColor: "#e5e7eb",
+                }}
+              >
+                {/* HEADER (DYNAMIC COLOR) */}
+                <View
+                  style={{
+                    backgroundColor: isOut ? "#fee2e2" : "#dcfce7",
+                    padding: 14,
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontWeight: "700",
+                      color: isOut ? "#991b1b" : "#065f46",
+                    }}
+                  >
+                    {item.name}
+                  </Text>
 
-              <Text style={styles.inText}>
-                IN: {item.IN ? new Date(item.IN).toLocaleString() : "-"}
-              </Text>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontWeight: "700",
+                      color: isOut ? "#dc2626" : "#16a34a",
+                    }}
+                  >
+                    {isOut ? "OUT" : "IN"}
+                  </Text>
+                </View>
 
-              <Text style={styles.outText}>
-                OUT: {item.OUT ? new Date(item.OUT).toLocaleString() : "-"}
-              </Text>
+                {/* BODY */}
+                <View style={{ padding: 14 }}>
+                  {/* ID */}
+                  <Text style={{ color: "#6b7280", fontSize: 13 }}>
+                    Employee ID: {item.employeeno}
+                  </Text>
 
-              <Text style={styles.itemsHeader}>Items:</Text>
+                  {/* TIME */}
+                  <View style={{ flexDirection: "row", marginTop: 12 }}>
+                    <View
+                      style={{
+                        flex: 1,
+                        backgroundColor: "#f9fafb",
+                        padding: 10,
+                        borderRadius: 10,
+                        marginRight: 6,
+                      }}
+                    >
+                      <Text style={{ fontSize: 11, color: "#9ca3af" }}>IN</Text>
+                      <Text style={{ fontWeight: "600" }}>
+                        {item.IN ? formatTime(item.IN) : "-"}
+                      </Text>
+                    </View>
 
-              {item.items?.map((i: string, idx: number) => (
-                <Text key={idx} style={styles.item}>
-                  • {i}
-                </Text>
-              ))}
-            </View>
-          )}
+                    <View
+                      style={{
+                        flex: 1,
+                        backgroundColor: "#f9fafb",
+                        padding: 10,
+                        borderRadius: 10,
+                        marginLeft: 6,
+                      }}
+                    >
+                      <Text style={{ fontSize: 11, color: "#9ca3af" }}>OUT</Text>
+                      <Text style={{ fontWeight: "600" }}>
+                        {item.OUT ? formatTime(item.OUT) : "-"}
+                      </Text>
+                    </View>
+                  </View>
+
+                {/* ITEMS */}
+{item.items?.length > 0 && (
+  <View
+    style={{
+      marginTop: 12,
+      backgroundColor: "#f9fafb",
+      padding: 12,
+      borderRadius: 12,
+    }}
+  >
+    <Text
+      style={{
+        fontSize: 12,
+        color: "#6b7280",
+        marginBottom: 8,
+        fontWeight: "600",
+      }}
+    >
+      Items
+    </Text>
+
+    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+      {item.items.map((i: string, idx: number) => (
+        <View
+          key={idx}
+          style={{
+            backgroundColor: "#e5e7eb",
+            paddingHorizontal: 10,
+            paddingVertical: 6,
+            borderRadius: 999, // 🔥 pill shape
+          }}
+        >
+          <Text style={{ fontSize: 12, color: "#111827" }}>
+            {i}
+          </Text>
+        </View>
+      ))}
+    </View>
+  </View>
+)}
+                </View>
+              </View>
+            );
+          }}
         />
       )}
     </SafeAreaView>

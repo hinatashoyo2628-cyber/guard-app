@@ -3,45 +3,41 @@ import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#eef2f7",
+    backgroundColor: "#f4f7fb",
   },
 
   navbar: {
-    height: 70,
-    backgroundColor: "#ffffff",
+    height: 75,
+    backgroundColor: "#1f3f5b",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#e5e7eb",
   },
 
   title: {
-    color: "#111827",
-    fontSize: 20,
-    fontWeight: "700",
-    letterSpacing: 0.3,
+    color: "#ffffff",
+    fontSize: 22,
+    fontWeight: "800",
   },
 
-  // 🔥 NEW ATTENDANCE BADGE
   attendanceText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "700",
-    color: "#2563eb",
-    backgroundColor: "#eff6ff",
-    paddingHorizontal: 12,
+    color: "#1f3f5b",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 999,
   },
 
   dropdown: {
     position: "absolute",
-    top: 75,
+    top: 80,
     right: 20,
     backgroundColor: "#ffffff",
-    borderRadius: 14,
-    paddingVertical: 8,
+    borderRadius: 16,
+    paddingVertical: 10,
     width: 170,
     elevation: 10,
     zIndex: 10,
@@ -50,14 +46,14 @@ export const styles = StyleSheet.create({
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
     gap: 10,
   },
 
   menuText: {
     fontSize: 14,
-    color: "#374151",
+    color: "#334155",
   },
 
   overlay: {
@@ -78,65 +74,62 @@ export const styles = StyleSheet.create({
 
   statusText: {
     fontSize: 16,
-    color: "#6b7280",
-    textAlign: "center",
-    opacity: 0.8,
+    color: "#64748b",
   },
 
-  // 🔥 EMPLOYEE CARD
+  // 🔥 CARD
   employeeContainer: {
     width: "100%",
     backgroundColor: "#ffffff",
     padding: 24,
-    borderRadius: 20,
+    borderRadius: 26,
 
     shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 10,
   },
 
   employeeName: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#111827",
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#1f3f5b",
   },
 
   employeeId: {
     marginTop: 6,
     fontSize: 14,
-    color: "#6b7280",
+    color: "#64748b",
   },
 
   timeText: {
-    marginTop: 6,
-    fontSize: 12,
-    color: "#9ca3af",
+    marginTop: 8,
+    fontSize: 13,
+    color: "#94a3b8",
   },
 
   itemsHeader: {
-    marginTop: 20,
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#111827",
+    marginTop: 22,
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1f3f5b",
   },
 
-  // 🔥 ITEM CARD
   itemCard: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#f9fafb",
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    marginTop: 10,
+    backgroundColor: "#f1f5f9",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    marginTop: 12,
   },
 
   itemText: {
     fontSize: 15,
-    color: "#374151",
+    color: "#334155",
   },
 
   removeText: {
@@ -145,66 +138,59 @@ export const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
-  // 🔥 ADD ITEM
   addRow: {
     flexDirection: "row",
-    marginTop: 12,
+    marginTop: 14,
     gap: 10,
   },
 
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: 12,
-    paddingHorizontal: 12,
+    borderColor: "#e2e8f0",
+    borderRadius: 14,
+    paddingHorizontal: 14,
     paddingVertical: 10,
     backgroundColor: "#fff",
   },
 
   addBtn: {
-    backgroundColor: "#10b981",
-    paddingHorizontal: 14,
+    backgroundColor: "#2f6f9f",
+    paddingHorizontal: 16,
     justifyContent: "center",
-    borderRadius: 12,
+    borderRadius: 14,
   },
 
   addText: {
     color: "#fff",
-    fontWeight: "600",
+    fontWeight: "700",
   },
 
-  // 🔥 BUTTONS
   editBtn: {
-    marginTop: 15,
-    backgroundColor: "#f59e0b",
-    paddingVertical: 13,
-    borderRadius: 12,
-    alignItems: "center",
-  },
+  marginTop: 18,
+  backgroundColor: "#2f6f9f", // corporate blue
+  paddingVertical: 14,
+  borderRadius: 12,
+  alignItems: "center",
+},
 
-  editText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
+confirmBtn: {
+  marginTop: 14,
+  backgroundColor: "#1f3f5b", // darker main brand
+  paddingVertical: 15,
+  borderRadius: 12,
+  alignItems: "center",
+},
 
-  confirmBtn: {
-    marginTop: 18,
-    backgroundColor: "#2563eb",
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: "center",
+editText: {
+  color: "#fff",
+  fontWeight: "700",
+  fontSize: 15,
+},
 
-    shadowColor: "#2563eb",
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 5,
-  },
-
-  confirmText: {
-    color: "#ffffff",
-    fontSize: 15,
-    fontWeight: "600",
-  },
+confirmText: {
+  color: "#ffffff",
+  fontSize: 16,
+  fontWeight: "700",
+},
 });
