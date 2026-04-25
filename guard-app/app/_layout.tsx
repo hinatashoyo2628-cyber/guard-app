@@ -5,6 +5,9 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
+import { Ionicons } from "@expo/vector-icons";
+import { Pressable } from "react-native";
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
@@ -12,26 +15,40 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
         <Stack.Screen
-  name="records"
-  options={{
-    title: "Records",
+          name="records"
+          options={({ navigation }) => ({
+            title: "Records",
 
-    // 🔵 BLUE NAVBAR
-    headerStyle: {
-      backgroundColor: "#1f3f5b",
-    },
+            headerStyle: {
+              backgroundColor: "#1f3f5b",
+            },
 
-    // 🔤 WHITE TEXT + ICON
-    headerTintColor: "#ffffff",
+            headerTintColor: "#ffffff",
 
-    // (optional) cleaner title style
-    headerTitleStyle: {
-      fontWeight: "600",
-    },
-  }}
-/>
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+            headerTitleStyle: {
+              fontWeight: "600",
+            },
+
+            // 🔥 PRINT BUTTON CONNECTED
+            headerRight: () => (
+              <Pressable
+                onPress={() => {
+                  navigation.setParams({ triggerPrint: Date.now() });
+                }}
+                style={{ marginRight: 15 }}
+              >
+                <Ionicons name="print-outline" size={22} color="#fff" />
+              </Pressable>
+            ),
+          })}
+        />
+
+        <Stack.Screen
+          name="modal"
+          options={{ presentation: 'modal', title: 'Modal' }}
+        />
       </Stack>
 
       <StatusBar style="auto" />

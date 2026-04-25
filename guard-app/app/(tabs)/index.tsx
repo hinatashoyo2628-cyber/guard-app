@@ -243,75 +243,82 @@ export default function HomeScreen() {
     setEditedItems((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
-  const handleConfirm = useCallback(async () => {
-    if (!employee || !currentUID) return;
+ const handleConfirm = useCallback(async () => {
+  if (!employee || !currentUID) return;
 
-    try {
-      const { today, month } = getTodayInfo();
-      const now = new Date().toISOString();
+  try {
+    const { today, month } = getTodayInfo();
+    const now = new Date().toISOString();
 
-      const historyRef = doc(
-        db,
-        "History",
-        month,
-        "days",
-        today,
-        "logs",
-        currentUID
-      );
+    // 🔥 CREATE DATE DOCUMENT FIRST (FIX FOR ITALIC ISSUE)
+    const dateRef = doc(db, "History", month, "days", today);
+    await setDoc(
+      dateRef,
+      { createdAt: now },
+      { merge: true } // important
+    );
 
-      const snap = await getDoc(historyRef);
+    const historyRef = doc(
+      db,
+      "History",
+      month,
+      "days",
+      today,
+      "logs",
+      currentUID
+    );
+
+    const snap = await getDoc(historyRef);
 
     if (!snap.exists()) {
-  // 🔥 GET CURRENT COUNT FIRST
-  const logsSnap = await getDocs(
-    collection(db, "History", month, "days", today, "logs")
-  );
+      // 🔥 COUNT ATTENDANCE
+      const logsSnap = await getDocs(
+        collection(db, "History", month, "days", today, "logs")
+      );
 
-  let attendanceNo = 1;
+      let attendanceNo = 1;
 
-  logsSnap.forEach((docSnap) => {
-    if (docSnap.data().IN) attendanceNo++;
-  });
+      logsSnap.forEach((docSnap) => {
+        if (docSnap.data().IN) attendanceNo++;
+      });
 
-  // 🔥 SAVE WITH NUMBER
-  await setDoc(historyRef, {
-    name: employee.name,
-    employeeno: employee.employeeno,
-    items: editedItems,
-    IN: now,
-    OUT: null,
-    attendanceNo: attendanceNo, // ✅ THIS IS THE FIX
-  });
-} else {
+      await setDoc(historyRef, {
+        name: employee.name,
+        employeeno: employee.employeeno,
+        items: editedItems,
+        IN: now,
+        OUT: null,
+        attendanceNo: attendanceNo,
+      });
+    } else {
       await updateDoc(historyRef, {
         OUT: now,
-        items: editedItems, // ✅ ADD THIS
-      });
-    }
-
-      await updateDoc(doc(db, "employees", currentUID), {
         items: editedItems,
       });
-
-      await getTodayAttendanceCount();
-
-      resetEmployeeState();
-      setScreenState("idle");
-
-      scanNfc();
-    } catch (error) {
-      console.log("❌ Confirm error:", error);
     }
-  }, [
-    employee,
-    currentUID,
-    editedItems,
-    getTodayInfo,
-    getTodayAttendanceCount,
-    resetEmployeeState,
-    scanNfc,
-  ]);
+
+    await updateDoc(doc(db, "employees", currentUID), {
+      items: editedItems,
+    });
+
+    await getTodayAttendanceCount();
+
+    resetEmployeeState();
+    setScreenState("idle");
+
+    scanNfc();
+  } catch (error) {
+    console.log("❌ Confirm error:", error);
+  }
+}, [
+  employee,
+  currentUID,
+  editedItems,
+  getTodayInfo,
+  getTodayAttendanceCount,
+  resetEmployeeState,
+  scanNfc,
+]);
 
   const handleScanAgain = useCallback(() => {
     resetEmployeeState();
