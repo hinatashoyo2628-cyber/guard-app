@@ -3,6 +3,7 @@ import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Print from "expo-print";
 import { PDFDocument } from "pdf-lib";
+
 export const fillAndPrintPdf = async (records: any[]) => {
   try {
     // 📄 LOAD PDF
@@ -29,16 +30,19 @@ export const fillAndPrintPdf = async (records: any[]) => {
       return `${mm}-${dd}-${yyyy}`;
     };
 
-    // 🔥 FORMAT TIME → 3:06 pm
+    // 🔥 FORMAT TIME → 3:06 pm (FIXED)
     const formatTime = (iso: string) => {
       const d = new Date(iso);
-      return d.toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit",
-      });
+      return d
+        .toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        })
+        .toLowerCase();
     };
 
-    // 🔥 SAFE SET FIELD (prevents crash)
+    // 🔥 SAFE SET FIELD
     const setField = (name: string, value: string) => {
       try {
         form.getTextField(name).setText(value);
@@ -47,20 +51,17 @@ export const fillAndPrintPdf = async (records: any[]) => {
       }
     };
 
-    // 🔥 LOOP ALL RECORDS
+    // 🔥 LOOP RECORDS
     records.forEach((rec) => {
       const n = rec.attendanceNo;
 
-      // BASIC INFO
       setField(`name${n}`, rec.name || "");
       setField(`pos${n}`, rec.position || "");
       setField(`date${n}`, formatDate(rec.IN));
 
-      // ✅ FIXED LOWERCASE
       setField(`in${n}`, formatTime(rec.IN));
       setField(`out${n}`, formatTime(rec.OUT));
 
-      // ITEMS
       rec.items?.forEach((item: string, index: number) => {
         setField(`item${n}-${index + 1}`, item);
       });

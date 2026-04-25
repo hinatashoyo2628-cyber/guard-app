@@ -30,6 +30,10 @@ import { styles } from "../../styles/styles";
 export default function HomeScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [employee, setEmployee] = useState<any>(null);
+  // 🔥 ADD THIS STATE
+const [showSuccess, setShowSuccess] = useState(false);
+const successAnim = useRef(new Animated.Value(0)).current;
+const [confirmLoading, setConfirmLoading] = useState(false);
 
   const [editing, setEditing] = useState(false);
   const [editedItems, setEditedItems] = useState<string[]>([]);
@@ -244,19 +248,16 @@ export default function HomeScreen() {
   }, []);
 
  const handleConfirm = useCallback(async () => {
-  if (!employee || !currentUID) return;
+  if (!employee || !currentUID || confirmLoading) return;
+
+  setConfirmLoading(true);
 
   try {
     const { today, month } = getTodayInfo();
     const now = new Date().toISOString();
 
-    // 🔥 CREATE DATE DOCUMENT FIRST (FIX FOR ITALIC ISSUE)
     const dateRef = doc(db, "History", month, "days", today);
-    await setDoc(
-      dateRef,
-      { createdAt: now },
-      { merge: true } // important
-    );
+    await setDoc(dateRef, { createdAt: now }, { merge: true });
 
     const historyRef = doc(
       db,
@@ -271,7 +272,6 @@ export default function HomeScreen() {
     const snap = await getDoc(historyRef);
 
     if (!snap.exists()) {
-      // 🔥 COUNT ATTENDANCE
       const logsSnap = await getDocs(
         collection(db, "History", month, "days", today, "logs")
       );
@@ -288,7 +288,7 @@ export default function HomeScreen() {
         items: editedItems,
         IN: now,
         OUT: null,
-        attendanceNo: attendanceNo,
+        attendanceNo,
       });
     } else {
       await updateDoc(historyRef, {
@@ -303,12 +303,29 @@ export default function HomeScreen() {
 
     await getTodayAttendanceCount();
 
+    // ✅ SHOW CUSTOM POPUP
+    setShowSuccess(true);
+    Animated.timing(successAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+
+    setTimeout(() => {
+      Animated.timing(successAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setShowSuccess(false));
+    }, 1500);
+
     resetEmployeeState();
     setScreenState("idle");
-
     scanNfc();
   } catch (error) {
     console.log("❌ Confirm error:", error);
+  } finally {
+    setConfirmLoading(false);
   }
 }, [
   employee,
@@ -318,6 +335,7 @@ export default function HomeScreen() {
   getTodayAttendanceCount,
   resetEmployeeState,
   scanNfc,
+  confirmLoading,
 ]);
 
   const handleScanAgain = useCallback(() => {
@@ -524,9 +542,17 @@ export default function HomeScreen() {
                 </Pressable>
               )}
 
-              <Pressable style={styles.confirmBtn} onPress={handleConfirm}>
-                <Text style={styles.confirmText}>Confirm</Text>
-              </Pressable>
+             <Pressable
+  style={[styles.confirmBtn, confirmLoading && { opacity: 0.6 }]}
+  onPress={handleConfirm}
+  disabled={confirmLoading}
+>
+  {confirmLoading ? (
+    <ActivityIndicator color="#fff" />
+  ) : (
+    <Text style={styles.confirmText}>Confirm</Text>
+  )}
+</Pressable>
             </Animated.View>
           </View>
         )}
@@ -565,6 +591,36 @@ export default function HomeScreen() {
   </Text>
 </Pressable>
   </View>
+)}
+
+{showSuccess && (
+  <Animated.View
+    style={{
+      position: "absolute",
+      top: 100,
+      alignSelf: "center",
+      backgroundColor: "#16a34a",
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 20,
+      flexDirection: "row",
+      alignItems: "center",
+      opacity: successAnim,
+      transform: [
+        {
+          translateY: successAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [-20, 0],
+          }),
+        },
+      ],
+    }}
+  >
+    <Ionicons name="checkmark-circle" size={18} color="#fff" />
+    <Text style={{ color: "#fff", marginLeft: 8, fontWeight: "600" }}>
+      Success
+    </Text>
+  </Animated.View>
 )}
     </View>
   );

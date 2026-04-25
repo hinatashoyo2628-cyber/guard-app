@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { collection, getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
@@ -18,6 +18,8 @@ export default function RecordsScreen() {
 
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  const router = useRouter();
 
   // 🔥 LISTEN TO PRINT TRIGGER
   const { triggerPrint } = useLocalSearchParams();
@@ -110,6 +112,9 @@ export default function RecordsScreen() {
 
     setRecords(list);
     setSelectedDate(date);
+
+    // 🔥 IMPORTANT: enables print button ONLY here
+    router.setParams({ selectedDate: date });
   };
 
   return (

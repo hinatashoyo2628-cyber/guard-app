@@ -18,7 +18,7 @@ export default function RootLayout() {
 
         <Stack.Screen
           name="records"
-          options={({ navigation }) => ({
+          options={({ navigation, route }) => ({
             title: "Records",
 
             headerStyle: {
@@ -31,17 +31,23 @@ export default function RootLayout() {
               fontWeight: "600",
             },
 
-            // 🔥 PRINT BUTTON CONNECTED
-            headerRight: () => (
-              <Pressable
-                onPress={() => {
-                  navigation.setParams({ triggerPrint: Date.now() });
-                }}
-                style={{ marginRight: 15 }}
-              >
-                <Ionicons name="print-outline" size={22} color="#fff" />
-              </Pressable>
-            ),
+            // 🔥 FIXED: CONDITIONAL PRINT BUTTON
+            headerRight: () => {
+              const showPrint = (route?.params as any)?.selectedDate;
+
+              if (!showPrint) return null;
+
+              return (
+                <Pressable
+                  onPress={() => {
+                    navigation.setParams({ triggerPrint: Date.now() });
+                  }}
+                  style={{ marginRight: 15 }}
+                >
+                  <Ionicons name="print-outline" size={22} color="#fff" />
+                </Pressable>
+              );
+            },
           })}
         />
 
