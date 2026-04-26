@@ -21,8 +21,9 @@ export const fillAndPrintPdf = async (records: any[]) => {
 
     const form = pdfDoc.getForm();
 
-    // 🔥 FORMAT DATE → 04-25-2026
+    // 🔥 FORMAT DATE
     const formatDate = (iso: string) => {
+      if (!iso) return "";
       const d = new Date(iso);
       const mm = String(d.getMonth() + 1).padStart(2, "0");
       const dd = String(d.getDate()).padStart(2, "0");
@@ -30,8 +31,9 @@ export const fillAndPrintPdf = async (records: any[]) => {
       return `${mm}-${dd}-${yyyy}`;
     };
 
-    // 🔥 FORMAT TIME → 3:06 pm (FIXED)
+    // 🔥 FORMAT TIME
     const formatTime = (iso: string) => {
+      if (!iso) return "";
       const d = new Date(iso);
       return d
         .toLocaleTimeString("en-US", {
@@ -42,19 +44,42 @@ export const fillAndPrintPdf = async (records: any[]) => {
         .toLowerCase();
     };
 
-    // 🔥 SAFE SET FIELD
-    const setField = (name: string, value: string) => {
-      try {
-        form.getTextField(name).setText(value);
-      } catch {
-        console.log("⚠️ Missing field:", name);
-      }
+    // 🔥 SAFE TEXT SET
+  const setField = (name: string, value: string) => {
+  try {
+    const field = form.getTextField(name);
+
+    field.setText(value);
+
+    // 🔥 make IN/OUT smaller
+    if (name.startsWith("in") || name.startsWith("out")) {
+      field.setFontSize(8); // adjust if needed (7–10)
+    }
+  } catch {}
+};
+
+    // 🔥 SIGNATURE POSITIONS
+    const sigPositions: any = {
+      1: { x: 200, y: 600 },
+      2: { x: 465, y: 600 },
+      3: { x: 250, y: 500 },
+      4: { x: 480, y: 500 },
+      5: { x: 250, y: 350 },
+      6: { x: 480, y: 350 },
+      7: { x: 250, y: 200 },
+      8: { x: 480, y: 200 },
+      9: { x: 250, y: 50 },
     };
 
+    const page = pdfDoc.getPages()[0];
+
     // 🔥 LOOP RECORDS
-    records.forEach((rec) => {
+    for (const rec of records) {
       const n = rec.attendanceNo;
 
+      if (!n || n < 1 || n > 9) continue;
+
+      // TEXT
       setField(`name${n}`, rec.name || "");
       setField(`pos${n}`, rec.position || "");
       setField(`date${n}`, formatDate(rec.IN));
@@ -65,12 +90,57 @@ export const fillAndPrintPdf = async (records: any[]) => {
       rec.items?.forEach((item: string, index: number) => {
         setField(`item${n}-${index + 1}`, item);
       });
-    });
 
-    // SAVE PDF
+      // 🔥 FIXED SIGNATURE DRAW (STABLE VERSION)
+      if (rec.signature) {
+        try {
+          let base64 = rec.signature;
+
+          // ✅ REMOVE PREFIX (important)
+          if (base64.includes(",")) {
+            base64 = base64.split(",")[1];
+          }
+
+          // ❌ skip invalid signatures
+          if (!base64 || base64.length < 100) continue;
+
+          let img;
+
+          // ✅ SAFE FORMAT DETECTION
+          if (rec.signature.startsWith("data:image/png")) {
+            img = await pdfDoc.embedPng(base64);
+          } else {
+            img = await pdfDoc.embedJpg(base64);
+          }
+
+          const pos = sigPositions[n];
+
+          if (pos) {
+            page.drawImage(img, {
+              x: pos.x - 20,
+              y: pos.y - 23,
+              width: 100,
+              height: 40,
+            });
+          }
+        } catch (e) {
+          console.log("❌ Signature error:", e);
+        }
+      }
+    }
+
+    // 🔥 MAKE NON-EDITABLE
+    form.flatten();
+
+    // SAVE
     const pdfBytes = await pdfDoc.save();
 
-    const fileUri = FileSystem.documentDirectory + "filled.pdf";
+    // 🔥 FILE NAME = DATE
+    const fileName = formatDate(
+      records[0]?.IN || new Date().toISOString()
+    );
+
+    const fileUri = FileSystem.documentDirectory + `${fileName}.pdf`;
 
     await FileSystem.writeAsStringAsync(
       fileUri,
@@ -78,7 +148,7 @@ export const fillAndPrintPdf = async (records: any[]) => {
       { encoding: FileSystem.EncodingType.Base64 }
     );
 
-    // 🖨️ PRINT
+    // PRINT
     await Print.printAsync({ uri: fileUri });
 
   } catch (err) {

@@ -114,7 +114,10 @@ export default function RecordsScreen() {
     setSelectedDate(date);
 
     // 🔥 IMPORTANT: enables print button ONLY here
-    router.setParams({ selectedDate: date });
+    router.setParams({
+      selectedDate: date,
+      records: list, // 🔥 THIS IS THE MISSING PIECE
+    });
   };
 
   return (

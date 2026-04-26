@@ -31,16 +31,20 @@ export default function RootLayout() {
               fontWeight: "600",
             },
 
-            // 🔥 FIXED: CONDITIONAL PRINT BUTTON
+            // 🔥 PRINT → GO TO SIGNATURE SCREEN
             headerRight: () => {
-              const showPrint = (route?.params as any)?.selectedDate;
+              const params = route?.params as any;
 
+              const showPrint = params?.selectedDate;
               if (!showPrint) return null;
 
               return (
                 <Pressable
                   onPress={() => {
-                    navigation.setParams({ triggerPrint: Date.now() });
+                    navigation.navigate("signature", {
+                      records: JSON.stringify(params?.records || []),
+                      date: params?.selectedDate, // ✅ ONLY DATE
+                    });
                   }}
                   style={{ marginRight: 15 }}
                 >
@@ -49,6 +53,16 @@ export default function RootLayout() {
               );
             },
           })}
+        />
+
+        {/* ✅ SIGNATURE SCREEN */}
+        <Stack.Screen
+          name="signature"
+          options={{
+            title: "Signature",
+            headerStyle: { backgroundColor: "#1f3f5b" },
+            headerTintColor: "#fff",
+          }}
         />
 
         <Stack.Screen

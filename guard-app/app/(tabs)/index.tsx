@@ -285,6 +285,7 @@ const [confirmLoading, setConfirmLoading] = useState(false);
       await setDoc(historyRef, {
         name: employee.name,
         employeeno: employee.employeeno,
+        position: employee.position || "", // ✅ ADD THIS
         items: editedItems,
         IN: now,
         OUT: null,
