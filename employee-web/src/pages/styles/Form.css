@@ -24,6 +24,46 @@
   text-align: center;
   margin-bottom: 20px;
   font-weight: 600;
+  color: #24364B;
+}
+
+/* 👤 USER BAR (UPDATED) */
+.user-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap; /* 🔥 allows Position to wrap nicely */
+}
+
+/* 📦 Individual boxes */
+.user-box {
+  flex: 1 1 30%; /* 🔥 supports 3 items */
+  min-width: 110px; /* prevents squish */
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  border: 1px solid #e5e7eb;
+  transition: 0.2s ease;
+}
+
+.user-box:hover {
+  transform: translateY(-2px);
+}
+
+/* Label */
+.label {
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+
+/* Value */
+.value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  word-break: break-word;
 }
 
 /* Swipe container */
@@ -51,11 +91,12 @@
   transition: all 0.2s ease;
 }
 
-/* Focus (FULL BORDER FIX) */
+/* Focus */
 .item-row input:focus {
   outline: none;
   background: #ffffff;
-  border: 2px solid #3b82f6;
+  border: 2px solid #7FA6B6; /* 🔥 MobileCare accent */
+  box-shadow: 0 0 0 3px rgba(127, 166, 182, 0.2);
 }
 
 /* Locked */
@@ -70,11 +111,12 @@
   height: 44px;
   border-radius: 12px;
   border: none;
-  background: #3b82f6;
+  background: #24364B; /* 🔥 brand color */
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: 0.2s;
 }
 
 .icon-btn:active {
@@ -104,39 +146,32 @@
   background: #111827;
   color: white;
   font-size: 16px;
+  font-weight: 600;
+  transition: 0.2s;
 }
 
 .logout-btn:active {
   transform: scale(0.97);
 }
 
-/* 👤 Container */
-.user-bar {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
+/* 📱 MOBILE OPTIMIZATION */
+@media (max-width: 480px) {
+  .form-card {
+    padding: 18px;
+  }
+
+  .user-box {
+    flex: 1 1 100%; /* 🔥 stack on small screens */
+  }
+
+  .item-row input {
+    font-size: 15px;
+  }
 }
 
-/* 📦 Individual boxes */
-.user-box {
-  flex: 1;
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 12px 14px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-border: 1px solid #e5e7eb;
-}
-
-/* Label (small text) */
-.label {
-  font-size: 12px;
-  color: #6b7280;
-  margin-bottom: 2px;
-}
-
-/* Value (main text) */
-.value {
-  font-size: 15px;
-  font-weight: 600;
-  color: #111827;
+/* 💻 DESKTOP */
+@media (min-width: 768px) {
+  .form-card {
+    max-width: 480px;
+  }
 }

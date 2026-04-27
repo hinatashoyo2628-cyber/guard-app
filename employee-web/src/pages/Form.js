@@ -118,18 +118,24 @@ export default function Form() {
 
         {/* 🔥 USER HEADER */}
       {userData && (
-        <div className="user-bar">
-          <div className="user-box">
-            <p className="label">Name</p>
-            <p className="value">{userData.name}</p>
-          </div>
+  <div className="user-bar">
+    <div className="user-box">
+      <p className="label">Name</p>
+      <p className="value">{userData.name}</p>
+    </div>
 
-          <div className="user-box">
-            <p className="label">ID</p>
-            <p className="value">{userData.employeeno}</p>
-          </div>
-        </div>
-      )}
+    <div className="user-box">
+      <p className="label">ID</p>
+      <p className="value">{userData.employeeno}</p>
+    </div>
+
+    {/* ✅ NEW POSITION */}
+    <div className="user-box">
+      <p className="label">Position</p>
+      <p className="value">{userData.position}</p>
+    </div>
+  </div>
+)}
         <h2>Item List</h2>
 
         {items.map((item, index) => {
