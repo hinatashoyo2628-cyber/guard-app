@@ -130,3 +130,15 @@
     padding: 42px;
   }
 }
+
+.remember-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.remember-row input {
+  cursor: pointer;
+}
