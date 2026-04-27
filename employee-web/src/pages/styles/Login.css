@@ -1,52 +1,132 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+/* BACKGROUND */
 .login-container {
   height: 100vh;
+  width: 100%;
   display: flex;
-  justify-content: center;
   align-items: center;
-  background: #0f172a;
+  justify-content: center;
+
+  background: #F5F7FA;
 }
 
-.login-box {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
+/* CARD */
+.login-card {
   width: 100%;
-  max-width: 350px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  max-width: 400px;
+  padding: 36px;
+  border-radius: 18px;
+
+  background: #FFFFFF;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+
+  border: 1px solid #E5E7EB;
+}
+
+/* HEADER */
+.login-header {
   text-align: center;
+  margin-bottom: 28px;
 }
 
-.login-box h2 {
-  margin-bottom: 20px;
+.login-header h2 {
+  font-size: 26px;
+  font-weight: 600;
+  color: #24364B;
 }
 
-.login-box input {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+.login-header p {
+  font-size: 14px;
+  color: #6B7280;
+  margin-top: 4px;
 }
 
-.login-box button {
-  width: 100%;
-  padding: 12px;
+/* FORM */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* INPUT */
+.login-form input {
+  padding: 13px 14px;
+  border-radius: 10px;
+  border: 1px solid #E5E7EB;
+  outline: none;
+
+  font-size: 14px;
+  color: #24364B;
+
+  transition: all 0.2s ease;
+}
+
+.login-form input:focus {
+  border-color: #7FA6B6;
+  box-shadow: 0 0 0 3px rgba(127, 166, 182, 0.2);
+}
+
+/* BUTTON */
+.login-form button {
+  padding: 13px;
+  border-radius: 10px;
   border: none;
-  border-radius: 8px;
-  background: #2563eb;
-  color: white;
-  font-weight: bold;
   cursor: pointer;
+
+  background: #24364B;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+
+  transition: all 0.25s ease;
 }
 
-.login-box button:hover {
-  background: #1d4ed8;
+.login-form button:hover {
+  background: #1b2a3c;
 }
 
-/* 📱 Mobile */
+.login-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* OPTIONAL ACCENT LINK */
+.login-link {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.login-link span {
+  color: #7FA6B6;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* 📱 MOBILE */
 @media (max-width: 480px) {
-  .login-box {
-    margin: 20px;
-    padding: 20px;
+  .login-card {
+    margin: 16px;
+    padding: 24px;
+  }
+
+  .login-header h2 {
+    font-size: 22px;
+  }
+}
+
+/* 💻 DESKTOP */
+@media (min-width: 1024px) {
+  .login-card {
+    max-width: 420px;
+    padding: 42px;
   }
 }

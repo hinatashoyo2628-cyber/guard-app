@@ -7,35 +7,54 @@ import { useNavigate } from "react-router-dom";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
-const handleLogin = async () => {
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-    navigate("/dashboard"); // redirect first
-  } catch (error) {
-    alert(error.message);
-  }
-};
+  const handleLogin = async () => {
+    if (!email || !password) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate("/dashboard");
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="login-container">
-      <div className="login-box">
-        <h2>Employee Login</h2>
+      <div className="login-card">
 
-        <input
-          type="email"
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <div className="login-header">
+          <h2>Mobilecare NPM</h2>
+          <p>Login to continue</p>
+        </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <div className="login-form">
+          <input
+            type="email"
+            placeholder="Email address"
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-        <button onClick={handleLogin}>Login</button>
+          <input
+            type="password"
+            placeholder="Password"
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <button onClick={handleLogin} disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </div>
+
       </div>
     </div>
   );
