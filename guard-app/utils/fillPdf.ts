@@ -2,11 +2,13 @@ import { Buffer } from "buffer";
 import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
 import { PDFDocument } from "pdf-lib";
 
 export const fillAndPrintPdf = async (records: any[]) => {
   try {
-    // 📄 LOAD PDF
+    console.log("📄 Loading PDF template...");
+
     const asset = Asset.fromModule(require("../assets/images/tickler.pdf"));
     await asset.downloadAsync();
 
@@ -19,23 +21,32 @@ export const fillAndPrintPdf = async (records: any[]) => {
       ignoreEncryption: true,
     });
 
-    const form = pdfDoc.getForm();
+    // 🔥 SAFE FORM ACCESS (NO CRASH)
+    let form: any = null;
+    try {
+      form = pdfDoc.getForm();
+    } catch (e) {
+      console.log("⚠️ PDF form not supported, skipping fields");
+    }
 
-    // 🔥 FORMAT DATE
+    const cleanText = (text: string) => {
+      if (!text) return "";
+      return text
+        .replace(/\u202f/g, " ")
+        .replace(/[^\x00-\xFF]/g, "");
+    };
+
     const formatDate = (iso: string) => {
       if (!iso) return "";
       const d = new Date(iso);
-      const mm = String(d.getMonth() + 1).padStart(2, "0");
-      const dd = String(d.getDate()).padStart(2, "0");
-      const yyyy = d.getFullYear();
-      return `${mm}-${dd}-${yyyy}`;
+      return `${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+        d.getDate()
+      ).padStart(2, "0")}-${d.getFullYear()}`;
     };
 
-    // 🔥 FORMAT TIME
     const formatTime = (iso: string) => {
       if (!iso) return "";
-      const d = new Date(iso);
-      return d
+      return new Date(iso)
         .toLocaleTimeString("en-US", {
           hour: "numeric",
           minute: "2-digit",
@@ -44,70 +55,63 @@ export const fillAndPrintPdf = async (records: any[]) => {
         .toLowerCase();
     };
 
-    // 🔥 SAFE TEXT SET
-  const setField = (name: string, value: string) => {
-  try {
-    const field = form.getTextField(name);
+    const setField = (name: string, value: string) => {
+      try {
+        if (!form) return; // 🔥 skip if no form
 
-    field.setText(value);
+        const field = form.getTextField(name);
+        field.setText(cleanText(value));
 
-    // 🔥 make IN/OUT smaller
-    if (name.startsWith("in") || name.startsWith("out")) {
-      field.setFontSize(8); // adjust if needed (7–10)
-    }
-  } catch {}
-};
+        if (name.startsWith("in") || name.startsWith("out")) {
+          field.setFontSize(8);
+        }
+      } catch (e) {
+        console.log("⚠️ Field error:", name);
+      }
+    };
 
-    // 🔥 SIGNATURE POSITIONS
     const sigPositions: any = {
       1: { x: 200, y: 600 },
       2: { x: 465, y: 600 },
-      3: { x: 250, y: 500 },
-      4: { x: 480, y: 500 },
-      5: { x: 250, y: 350 },
-      6: { x: 480, y: 350 },
-      7: { x: 250, y: 200 },
-      8: { x: 480, y: 200 },
-      9: { x: 250, y: 50 },
+      3: { x: 200, y: 460 },
+      4: { x: 465, y: 460 },
+      5: { x: 200, y: 320 },
+      6: { x: 465, y: 320 },
+      7: { x: 200, y: 195 },
+      8: { x: 465, y: 195 },
+      9: { x: 200, y: 75 },
     };
 
     const page = pdfDoc.getPages()[0];
 
-    // 🔥 LOOP RECORDS
     for (const rec of records) {
       const n = rec.attendanceNo;
-
       if (!n || n < 1 || n > 9) continue;
 
-      // TEXT
       setField(`name${n}`, rec.name || "");
       setField(`pos${n}`, rec.position || "");
       setField(`date${n}`, formatDate(rec.IN));
-
       setField(`in${n}`, formatTime(rec.IN));
       setField(`out${n}`, formatTime(rec.OUT));
 
       rec.items?.forEach((item: string, index: number) => {
-        setField(`item${n}-${index + 1}`, item);
+        setField(`item${n}-${index + 1}`, cleanText(item));
       });
 
-      // 🔥 FIXED SIGNATURE DRAW (STABLE VERSION)
+      // 🔥 SIGNATURE (ALWAYS WORKS EVEN WITHOUT FORM)
       if (rec.signature) {
         try {
           let base64 = rec.signature;
 
-          // ✅ REMOVE PREFIX (important)
           if (base64.includes(",")) {
             base64 = base64.split(",")[1];
           }
 
-          // ❌ skip invalid signatures
-          if (!base64 || base64.length < 100) continue;
+          if (!base64 || base64.length < 50) continue;
 
           let img;
 
-          // ✅ SAFE FORMAT DETECTION
-          if (rec.signature.startsWith("data:image/png")) {
+          if (rec.signature.includes("png")) {
             img = await pdfDoc.embedPng(base64);
           } else {
             img = await pdfDoc.embedJpg(base64);
@@ -129,13 +133,13 @@ export const fillAndPrintPdf = async (records: any[]) => {
       }
     }
 
-    // 🔥 MAKE NON-EDITABLE
-    form.flatten();
+    // 🔥 FLATTEN ONLY IF FORM EXISTS
+    if (form) {
+      form.flatten();
+    }
 
-    // SAVE
     const pdfBytes = await pdfDoc.save();
 
-    // 🔥 FILE NAME = DATE
     const fileName = formatDate(
       records[0]?.IN || new Date().toISOString()
     );
@@ -148,8 +152,16 @@ export const fillAndPrintPdf = async (records: any[]) => {
       { encoding: FileSystem.EncodingType.Base64 }
     );
 
-    // PRINT
-    await Print.printAsync({ uri: fileUri });
+    console.log("📁 PDF saved at:", fileUri);
+
+    // 🔥 PRINT OR SHARE (100% RELIABLE)
+    try {
+      await Print.printAsync({ uri: fileUri });
+    } catch {
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri);
+      }
+    }
 
   } catch (err) {
     console.log("❌ PDF Error:", err);

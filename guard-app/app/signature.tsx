@@ -1,16 +1,10 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import {
-    ActivityIndicator,
-    Pressable,
-    Text,
-    View,
-} from "react-native";
-import SignatureScreen from "react-native-signature-canvas";
-import { fillAndPrintPdf } from "../utils/fillPdf";
-
 import { collection, getDocs, updateDoc } from "firebase/firestore";
+import { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import SignatureScreen from "react-native-signature-canvas";
 import { db } from "../firebase";
+import { fillAndPrintPdf } from "../utils/fillPdf";
 
 export default function SignaturePage() {
   const router = useRouter();
@@ -21,17 +15,40 @@ export default function SignaturePage() {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
 
+  const [signatureReady, setSignatureReady] = useState(false);
+  const [signatureKey, setSignatureKey] = useState(0);
+
   let parsedRecords: any[] = [];
 
   try {
     parsedRecords = JSON.parse(records as string);
-  } catch {}
+    console.log("📦 Parsed records:", parsedRecords.length);
+  } catch (e) {
+    console.log("❌ Failed to parse records:", e);
+  }
+
+  useEffect(() => {
+    console.log("📄 Signature screen mounted");
+
+    const timer = setTimeout(() => {
+      console.log("✅ Signature canvas allowed to render");
+      setSignatureReady(true);
+      setSignatureKey((prev) => prev + 1);
+    }, 600);
+
+    return () => {
+      clearTimeout(timer);
+      console.log("📄 Signature screen unmounted");
+    };
+  }, []);
 
   useEffect(() => {
     let interval: any;
 
     if (loading) {
+      console.log("⏳ Loading started...");
       setProgress(0);
+
       interval = setInterval(() => {
         setProgress((prev) => (prev >= 90 ? prev : prev + 10));
       }, 200);
@@ -42,6 +59,13 @@ export default function SignaturePage() {
 
   const handleOK = async (signature: string) => {
     if (loading) return;
+
+    if (!signature) {
+      console.log("❌ Signature empty");
+      return;
+    }
+
+    console.log("✍️ Signature captured");
 
     setLoading(true);
 
@@ -69,6 +93,7 @@ export default function SignaturePage() {
 
       setProgress(100);
 
+      console.log("✅ Done! Going back...");
       router.back();
     } catch (e) {
       console.log("❌ Signature save error:", e);
@@ -81,53 +106,94 @@ export default function SignaturePage() {
     if (!loading) signatureRef.current?.clearSignature();
   };
 
+  const reloadSignaturePad = () => {
+    setSignatureReady(false);
+
+    setTimeout(() => {
+      setSignatureKey((prev) => prev + 1);
+      setSignatureReady(true);
+    }, 300);
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: "#1f3f5b" }}>
-      
-      {/* 🔥 SPOTLIGHT LAYOUT (NO OVERLAY ON TOP) */}
+
+      {/* 🔥 DARK BACKGROUND (DOES NOT BLOCK TOUCH) */}
+      <View
+        pointerEvents="none"
+        style={{
+          position: "absolute",
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: "rgba(0,0,0,0.6)",
+        }}
+      />
+
+      {/* 🔥 CENTER SIGNATURE BOX */}
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         
-        {/* OUTSIDE DARK AREA */}
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: "rgba(0,0,0,0.65)",
-          }}
-        />
-
-        {/* SIGN BOX */}
-        <View
-          style={{
-            width: "90%",
-            height: 260,
-            backgroundColor: "#fff",
-            borderRadius: 20,
-            borderWidth: 3,
-            borderColor: "#1f3f5b",
-            overflow: "hidden",
-            zIndex: 2, // 🔥 ABOVE DARK BG
-          }}
-        >
-          <SignatureScreen
-            ref={signatureRef}
-            onOK={handleOK}
-            penColor="black"
-            minWidth={2.5}
-            maxWidth={4}
-            webStyle={`
-              .m-signature-pad--footer {display: none;}
-              body,html {
-                margin:0;
-                padding:0;
-                background:#fff;
-              }
-            `}
-          />
-        </View>
+        {!signatureReady ? (
+          <View
+            style={{
+              width: "85%",
+              height: 260,
+              backgroundColor: "#fff",
+              borderRadius: 20,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <ActivityIndicator size="large" color="#1f3f5b" />
+            <Text style={{ marginTop: 10 }}>Loading signature pad...</Text>
+          </View>
+        ) : (
+          <View
+            style={{
+              width: "85%",
+              height: 260,
+              backgroundColor: "#fff",
+              borderRadius: 20,
+              overflow: "hidden",
+              borderWidth: 2,
+              borderColor: "#1f3f5b",
+            }}
+          >
+            <SignatureScreen
+              key={signatureKey}
+              ref={signatureRef}
+              onOK={handleOK}
+              onBegin={() => console.log("🖊️ Start drawing")}
+              onEnd={() => console.log("🛑 End drawing")}
+              penColor="black"
+              minWidth={2.5}
+              maxWidth={4}
+              style={{ flex: 1 }}
+              webStyle={`
+                .m-signature-pad--footer {display: none;}
+                .m-signature-pad {
+                  position: fixed;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                  background: #ffffff;
+                }
+                canvas {
+                  background-color: #ffffff;
+                }
+                body, html {
+                  margin: 0;
+                  padding: 0;
+                  overflow: hidden;
+                  touch-action: none;
+                }
+              `}
+              androidLayerType="hardware"
+            />
+          </View>
+        )}
       </View>
 
       {/* 🔥 BUTTONS */}
@@ -136,39 +202,55 @@ export default function SignaturePage() {
           flexDirection: "row",
           justifyContent: "space-evenly",
           paddingVertical: 20,
-          backgroundColor: "#f8fafc",
+          backgroundColor: "#ffffff",
         }}
       >
         <Pressable
           onPress={handleClear}
+          disabled={loading || !signatureReady}
           style={{
             backgroundColor: "#ef4444",
             paddingVertical: 16,
-            paddingHorizontal: 40,
+            paddingHorizontal: 28,
             borderRadius: 16,
           }}
         >
-          <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
+          <Text style={{ color: "#fff", fontWeight: "700" }}>
             Clear
           </Text>
         </Pressable>
 
         <Pressable
-          onPress={() => signatureRef.current?.readSignature()}
+          onPress={reloadSignaturePad}
           style={{
-            backgroundColor: "#1f3f5b",
+            backgroundColor: "#64748b",
             paddingVertical: 16,
-            paddingHorizontal: 40,
+            paddingHorizontal: 28,
             borderRadius: 16,
           }}
         >
-          <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
+          <Text style={{ color: "#fff", fontWeight: "700" }}>
+            Reload
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => signatureRef.current?.readSignature()}
+          disabled={loading || !signatureReady}
+          style={{
+            backgroundColor: "#1f3f5b",
+            paddingVertical: 16,
+            paddingHorizontal: 28,
+            borderRadius: 16,
+          }}
+        >
+          <Text style={{ color: "#fff", fontWeight: "700" }}>
             Print
           </Text>
         </Pressable>
       </View>
 
-      {/* 🔥 LOADING (BLOCKS ALL TOUCH) */}
+      {/* 🔥 LOADING OVERLAY */}
       {loading && (
         <View
           style={{
@@ -183,23 +265,10 @@ export default function SignaturePage() {
             zIndex: 999,
           }}
         >
-          <View
-            style={{
-              backgroundColor: "#fff",
-              padding: 30,
-              borderRadius: 20,
-              alignItems: "center",
-              width: 220,
-            }}
-          >
-            <ActivityIndicator size="large" color="#1f3f5b" />
-
-            <Text style={{ marginTop: 15, fontWeight: "700" }}>
-              Processing...
-            </Text>
-
-            <Text style={{ marginTop: 5 }}>{progress}%</Text>
-          </View>
+          <ActivityIndicator size="large" color="#fff" />
+          <Text style={{ color: "#fff", marginTop: 10 }}>
+            Processing... {progress}%
+          </Text>
         </View>
       )}
     </View>
