@@ -1,49 +1,55 @@
-/* 🌈 Background */
+/* 🌈 BACKGROUND */
 .form-container {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(180deg, #e0f2fe, #f8fafc);
   padding: 16px;
+
+  /* 🔥 Dark gradient (same as login) */
+  background: linear-gradient(135deg, #0f1c3f, #1f2f5a);
 }
 
-/* 📦 Card */
+/* 📦 CARD (WHITE CLEAN) */
 .form-card {
   width: 100%;
   max-width: 420px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(20px);
+  background: #ffffff; /* ✅ keep white */
   border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  border: 1px solid #e5e7eb;
 }
 
-/* Title */
+/* TITLE */
 .form-card h2 {
   text-align: center;
   margin-bottom: 20px;
   font-weight: 600;
-  color: #24364B;
+  color: #1f2f5a; /* 🔥 match bg theme */
 }
 
-/* 👤 USER BAR (UPDATED) */
+/* 👤 USER BAR */
 .user-bar {
   display: flex;
   gap: 10px;
   margin-bottom: 16px;
-  flex-wrap: wrap; /* 🔥 allows Position to wrap nicely */
+  flex-wrap: wrap;
 }
 
-/* 📦 Individual boxes */
+/* 📦 USER BOX */
 .user-box {
-  flex: 1 1 30%; /* 🔥 supports 3 items */
-  min-width: 110px; /* prevents squish */
-  background: #ffffff;
+  flex: 1 1 30%;
+  min-width: 110px;
+
+  background: #f8fafc;
   border-radius: 14px;
   padding: 12px 14px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+
   border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+
   transition: 0.2s ease;
 }
 
@@ -51,14 +57,14 @@
   transform: translateY(-2px);
 }
 
-/* Label */
+/* LABEL */
 .label {
   font-size: 11px;
   color: #6b7280;
   margin-bottom: 2px;
 }
 
-/* Value */
+/* VALUE */
 .value {
   font-size: 14px;
   font-weight: 600;
@@ -66,102 +72,120 @@
   word-break: break-word;
 }
 
-/* Swipe container */
+/* SWIPE */
 .swipe-container {
   position: relative;
   margin-bottom: 12px;
 }
 
-/* Row */
+/* ROW */
 .item-row {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-/* Input */
+/* INPUT */
 .item-row input {
   flex: 1;
   height: 44px;
   padding: 0 14px;
   border-radius: 14px;
   border: 2px solid transparent;
+
   background: #f1f5f9;
   font-size: 16px;
+
   transition: all 0.2s ease;
 }
 
-/* Focus */
+/* FOCUS */
 .item-row input:focus {
   outline: none;
   background: #ffffff;
-  border: 2px solid #7FA6B6; /* 🔥 MobileCare accent */
-  box-shadow: 0 0 0 3px rgba(127, 166, 182, 0.2);
+  border: 2px solid #3b82f6; /* 🔥 modern blue */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
-/* Locked */
+/* LOCKED */
 .item-row input[readonly] {
   background: #e5e7eb;
   color: #6b7280;
 }
 
-/* Add button */
+/* ➕ ADD BUTTON */
 .icon-btn {
   width: 44px;
   height: 44px;
   border-radius: 12px;
   border: none;
-  background: #24364B; /* 🔥 brand color */
+
+  background: #1f2f5a; /* 🔥 match bg */
   color: white;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   transition: 0.2s;
+}
+
+.icon-btn:hover {
+  background: #162347;
 }
 
 .icon-btn:active {
   transform: scale(0.9);
 }
 
-/* 🗑️ Delete button */
+/* 🗑️ DELETE */
 .swipe-delete {
   width: 44px;
   height: 44px;
   border-radius: 12px;
   border: none;
+
   background: #ef4444;
   color: white;
+
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Logout */
+/* LOGOUT */
 .logout-btn {
   width: 100%;
   margin-top: 20px;
   padding: 14px;
   border-radius: 16px;
   border: none;
-  background: #111827;
+
+  background: #1f2f5a; /* 🔥 match theme */
   color: white;
+
   font-size: 16px;
   font-weight: 600;
+
   transition: 0.2s;
+}
+
+.logout-btn:hover {
+  background: #162347;
 }
 
 .logout-btn:active {
   transform: scale(0.97);
 }
 
-/* 📱 MOBILE OPTIMIZATION */
+/* 📱 MOBILE */
 @media (max-width: 480px) {
   .form-card {
     padding: 18px;
   }
 
   .user-box {
-    flex: 1 1 100%; /* 🔥 stack on small screens */
+    flex: 1 1 100%;
   }
 
   .item-row input {
