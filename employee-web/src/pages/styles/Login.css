@@ -14,20 +14,22 @@
   align-items: center;
   justify-content: center;
 
-  background: #F5F7FA;
+  /* 🔥 Dark blue gradient */
+  background: linear-gradient(135deg, #0f1c3f, #1f2f5a);
 }
 
-/* CARD */
+/* CARD (GLASS STYLE) */
 .login-card {
   width: 100%;
   max-width: 400px;
   padding: 36px;
   border-radius: 18px;
 
-  background: #FFFFFF;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px);
 
-  border: 1px solid #E5E7EB;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
 /* HEADER */
@@ -39,12 +41,12 @@
 .login-header h2 {
   font-size: 26px;
   font-weight: 600;
-  color: #24364B;
+  color: #ffffff;
 }
 
 .login-header p {
   font-size: 14px;
-  color: #6B7280;
+  color: rgba(255, 255, 255, 0.7);
   margin-top: 4px;
 }
 
@@ -59,18 +61,23 @@
 .login-form input {
   padding: 13px 14px;
   border-radius: 10px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   outline: none;
 
   font-size: 14px;
-  color: #24364B;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
 
   transition: all 0.2s ease;
 }
 
+.login-form input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
 .login-form input:focus {
-  border-color: #7FA6B6;
-  box-shadow: 0 0 0 3px rgba(127, 166, 182, 0.2);
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
 }
 
 /* BUTTON */
@@ -80,7 +87,7 @@
   border: none;
   cursor: pointer;
 
-  background: #24364B;
+  background: #3b82f6;
   color: white;
   font-weight: 600;
   font-size: 14px;
@@ -89,7 +96,7 @@
 }
 
 .login-form button:hover {
-  background: #1b2a3c;
+  background: #2563eb;
 }
 
 .login-form button:disabled {
@@ -97,18 +104,31 @@
   cursor: not-allowed;
 }
 
-/* OPTIONAL ACCENT LINK */
+/* OPTIONAL LINK */
 .login-link {
   text-align: center;
   margin-top: 10px;
   font-size: 13px;
-  color: #6B7280;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .login-link span {
-  color: #7FA6B6;
+  color: #60a5fa;
   cursor: pointer;
   font-weight: 500;
+}
+
+/* REMEMBER ME */
+.remember-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.remember-row input {
+  cursor: pointer;
 }
 
 /* 📱 MOBILE */
@@ -129,16 +149,4 @@
     max-width: 420px;
     padding: 42px;
   }
-}
-
-.remember-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: #6B7280;
-}
-
-.remember-row input {
-  cursor: pointer;
 }
